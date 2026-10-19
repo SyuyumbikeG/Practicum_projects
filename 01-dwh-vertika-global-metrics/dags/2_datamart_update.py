@@ -5,8 +5,8 @@ from airflow.providers.vertica.hooks.vertica import VerticaHook
 from airflow.operators.python import PythonOperator
 
 VT_CONN_ID = "vertica_dwh"
-STG_SCHEMA = "VT2606186DB5B4__STAGING"
-DWH_SCHEMA = "VT2606186DB5B4__DWH"
+STG_SCHEMA = "STAGING"
+DWH_SCHEMA = "DWH"
 
 GLOBAL_METRICS_SQL = f"""
 INSERT INTO {DWH_SCHEMA}.global_metrics
