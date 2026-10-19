@@ -1,4 +1,4 @@
-INSERT INTO VT2606186DB5B4__DWH.global_metrics
+INSERT INTO DWH.global_metrics
 WITH
 -- 1 Только успешные (done) транзакции за день, без тестовых аккаунтов
 tx AS (
@@ -8,7 +8,7 @@ tx AS (
         currency_code        AS currency_from,
         amount,
         transaction_dt::date AS date_update
-    FROM VT2606186DB5B4__STAGING.transactions
+    FROM STAGING.transactions
     WHERE transaction_dt::date = :ds
       AND status = 'done'
       AND account_number_from > 0
@@ -20,7 +20,7 @@ rate AS (
         currency_code,
         currency_with_div,
         date_update::date AS date_update
-    FROM VT2606186DB5B4__STAGING.currencies
+    FROM STAGING.currencies
     WHERE currency_code_with = 420
       AND date_update::date = :ds
 )
