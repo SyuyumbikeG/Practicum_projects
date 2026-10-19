@@ -8,10 +8,10 @@ from airflow.operators.python import PythonOperator
 # настройки 
 PG_CONN_ID = "postgres_source"
 VT_CONN_ID = "vertica_dwh"
-STG_SCHEMA = "VT2606186DB5B4__STAGING"
+STG_SCHEMA = "STAGING"
 
 default_args = {
-    "owner": "vt2606186db5b4",
+    "owner": "syuyumbike",
     "start_date": datetime(2022, 10, 1),
     "retries": 2,
     "retry_delay": timedelta(minutes=5),
