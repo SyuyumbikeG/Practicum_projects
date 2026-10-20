@@ -16,8 +16,8 @@ base_url = http_conn_id.host
 
 postgres_conn_id = 'postgresql_de'
 
-nickname = 'sf-gaskarova'
-cohort = '15'
+nickname = os.getenv("API_NICKNAME", "your_nickname")
+cohort = os.getenv("API_COHORT", "your_cohort")
 
 headers = {
     'X-Nickname': nickname,
