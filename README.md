@@ -1,3 +1,1 @@
-# de-start-sprint-dwh-multi-sources-project
-
-Описание проекта смотрите на платформе.
+# de-start-sprint-etl-airflow-project
