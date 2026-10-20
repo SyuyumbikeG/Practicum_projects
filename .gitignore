@@ -1,0 +1,46 @@
+# ===== Секреты и конфиденциальные данные =====
+.env
+.env.*
+*.key
+*.pem
+config.ini
+secrets.yaml
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== Виртуальные окружения =====
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== Jupyter Notebook =====
+.ipynb_checkpoints/
+
+# ===== IDE / Редакторы =====
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ===== ОС =====
+.DS_Store
+Thumbs.db
+
+# ===== Тесты и кэш =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
