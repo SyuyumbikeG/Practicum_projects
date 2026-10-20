@@ -38,11 +38,11 @@ ETL-пайплайн для сбора транзакций и построен�
 `Airflow` `REST API` `S3` `PostgreSQL` `ETL`
 
 
-# 📬 Контакты
+## 📬 Контакты
 
-- 📧 Email: sf.gaskarova@gmail.com](mailto:sf.gaskarova@gmail.comm)
-- 💬 Telegram: [@SyuyumbikeG]
-- 📄 Резюме на hh.ru: [https://kazan.hh.ru/resume/481f5cdcff113dcea00039ed1f747257396e4a?hhtmFrom=main]
+- 📧 Email: [sf.gaskarova@gmail.com](mailto:sf.gaskarova@gmail.com)
+- 💬 Telegram: [@SyuyumbikeG](https://t.me/SyuyumbikeG)
+- 📄 Резюме на hh.ru: [Ссылка на резюме](https://kazan.hh.ru/resume/481f5cdcff113dcea00039ed1f747257396e4a?hhtmFrom=main)
 - 📍 Казань, Россия
 
 ---
