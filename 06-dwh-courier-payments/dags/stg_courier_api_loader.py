@@ -11,11 +11,11 @@ from lib.dict_util import json2str
 log = logging.getLogger(__name__)
 
 # Конфигурация API
-API_BASE_URL = "https://d5d04q7d963eapoepsqr.apigw.yandexcloud.net"
-API_KEY = "25c27781-8fde-4b30-a22e-524044a7580f"
-NICKNAME = "sf.gaskarova"
-COHORT = "15"
-LIMIT = 50
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.example.com")
+API_KEY = os.getenv("API_KEY")
+NICKNAME = os.getenv("API_NICKNAME", "your_nickname")
+COHORT = os.getenv("API_COHORT", "your_cohort")
+LIMIT = int(os.getenv("API_LIMIT", 50))
 
 
 @dag(
