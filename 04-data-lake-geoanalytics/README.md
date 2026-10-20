@@ -1,133 +1,123 @@
+# Data Lake и геоаналитические витрины для соцсети
 
-| Файл | Описание |
-|------|----------|
-| `README.md` | Описание проекта |
-| `user_geo_visits.py` | Скрипт витрины пользователей |
-| `geo_zones_viz.py` | Скрипт витрины зон |
-| `friends_recommendations.py` | Скрипт витрины рекомендаций |
-| `geo_etl_dag.py` | DAG для Airflow |
+Проект по проектированию структуры **Data Lake** в HDFS и построению геоаналитических витрин для соцсети с использованием **PySpark** и **Apache Airflow**. 
 
-## Зоны данных
+## 🎯 Задача
 
-| Зона | Путь | Формат | Описание |
-|------|------|--------|----------|
-| **Raw** | `/user/master/data/geo/events` | Parquet | Сырые события с геоданными |
-| **Staging** | `/user/s18151825/data/events` | JSON | Очищенные события |
-| **Analytics** | `/user/s18151825/data/analytics/` | Parquet | Готовые витрины |
-| **Geo** | `/user/s18151825/data/geo/cities` | CSV | Геоданные городов |
+Соцсеть запустилась в Австралии и готовится к внедрению системы рекомендации друзей и монетизации. Требуется:
+1. Спроектировать и описать структуру слоёв Data Lake.
+2. Построить витрину по пользователям (актуальный и домашний город, путешествия, локальное время).
+3. Построить витрину по зонам (распределение активности по городам за неделю и месяц).
+4. Построить витрину для рекомендации друзей (пользователи из одного канала, без переписки, в радиусе 1 км).
+5. Автоматизировать расчёт витрин в Airflow.
 
-## Витрины
+## 🏗️ Архитектура
+HDFS: /user/master/data/geo/events (события + координаты)
+HDFS: /user/master/data/geo/geo.csv (координаты городов)
+│
+▼
+┌─────────────────────┐
+│ PySpark: геопривязка│ ← формула гаверсинусов
+└─────────┬───────────┘
+│
+▼
+┌─────────────────────┐
+│ Витрина: пользователи│
+│ • act_city │
+│ • home_city │
+│ • travel_count │
+│ • travel_array │
+│ • local_time │
+└─────────┬───────────┘
+│
+▼
+┌─────────────────────┐
+│ Витрина: зоны │
+│ • week_message │
+│ • month_user │
+│ • ... │
+└─────────┬───────────┘
+│
+▼
+┌─────────────────────┐
+│ Витрина: рекомендации│
+│ • user_left/right │
+│ • zone_id │
+│ • local_time │
+└─────────────────────┘
 
-| Витрина | Обновление | Описание |
-|---------|-----------|----------|
-| **user_geo_viz** | Ежедневно | act_city, home_city, travel_count, travel_array |
-| **geo_zones_viz** | Еженедельно | Статистика по городам (неделя/месяц) |
-| **friends_recommendations** | Ежедневно | Пары пользователей для рекомендаций |
+text
 
-## Форматы данных
+## 🛠️ Стек
 
-- **JSON**: Сырые события (сохраняем оригинальную структуру)
-- **Parquet**: Аналитические витрины (сжатие, быстрый доступ)
-- **CSV**: Справочники (геоданные)
+- Python
+- Apache Spark (PySpark)
+- Hadoop / HDFS
+- Apache Airflow
+- Формула гаверсинусов (расчёт расстояний)
+- Таймзоны (`pyspark.sql.functions.from_utc_timestamp`)
 
-## Скрипты
+## 📂 Структура репозитория
+.
+├── dags/
+│ └── geo_analytics_dag.py # Airflow DAG для автоматизации
+├── scripts/
+│ ├── users_mart.py # витрина по пользователям
+│ ├── zones_mart.py # витрина по зонам
+│ └── friends_recommendation.py # витрина для рекомендаций друзей
+└── README.md
 
-| Скрипт | Назначение |
-|--------|------------|
-| `user_geo_visits.py` | Расчёт витрины пользователей |
-| `geo_zones_viz.py` | Расчёт статистики по зонам |
-| `friends_recommendations.py` | Расчёт рекомендаций друзей |
+text
 
-## Автоматизация (Airflow)
+## 📊 Витрины
 
-DAG `geo_etl_dag.py` запускает все три скрипта ежедневно в 00:00.
+### Витрина по пользователям
+- `user_id` — ID пользователя
+- `act_city` — актуальный город (по последнему сообщению)
+- `home_city` — домашний город (последний город, где пользователь был > 27 дней)
+- `travel_count` — количество посещённых городов
+- `travel_array` — список городов в порядке посещения
+- `local_time` — локальное время с учётом таймзоны
 
-## Результаты
+### Витрина по зонам
+- `month`, `week`, `zone_id`
+- `week_message`, `week_reaction`, `week_subscription`, `week_user`
+- `month_message`, `month_reaction`, `month_subscription`, `month_user`
 
-| Витрина | Количество записей |
-|---------|-------------------|
-| user_geo_viz | 21 |
-| geo_zones_viz | 15 |
-| friends_recommendations | 0 |
+### Витрина для рекомендации друзей
+- `user_left`, `user_right` — уникальная пара пользователей (без дублей)
+- `processed_dttm` — дата расчёта
+- `zone_id` — город
+- `local_time` — локальное время
 
+## 🧮 Геопривязка: формула гаверсинусов
 
-В Jupyter / скриптах используется:
+Расстояние между двумя точками на сфере:
+d = 2r · arcsin(√(sin²((φ₂−φ₁)/2) + cos(φ₁)·cos(φ₂)·sin²((λ₂−λ₁)/2)))
 
-from pyspark.sql import SparkSession
+text
+где `r = 6371 км`. Событие относится к городу с минимальным расстоянием до его центра.
 
-spark = SparkSession.builder \
-    .appName("ProjectName") \
-    .config("spark.sql.shuffle.partitions", "10") \
-    .getOrCreate()
+## 🚀 Как запустить
 
-Загрузка geo.csv:
+1. Загрузить справочник городов в HDFS:
+   ```bash
+   hdfs dfs -copyFromLocal geo.csv /user/master/data/geo/
+Убедиться, что события лежат по пути /user/master/data/geo/events.
 
-hdfs dfs -mkdir -p /user/s18151825/data/geo/cities
-hdfs dfs -copyFromLocal geo.csv /user/s18151825/data/geo/cities/
-hdfs dfs -ls /user/s18151825/data/geo/cities/
+Запустить скрипты расчёта:
 
-# Проверка городов
-cities_df = spark.read.parquet("/user/s18151825/data/geo/cities_parquet")
-print(f"Городов: {cities_df.count()}")
-cities_df.show(5, truncate=False)
+bash
+spark-submit scripts/users_mart.py
+spark-submit scripts/zones_mart.py
+spark-submit scripts/friends_recommendation.py
+Или запустить DAG в Airflow.
 
-Проверка витрины пользователей (user_geo_viz):
+📌 Особенности реализации
+ООП — код разбит на функции и переиспользуемые объекты.
 
-# Витрина пользователей
-user_viz = spark.read.parquet("/user/s18151825/data/analytics/user_geo_viz")
-print(f"Записей: {user_viz.count()}")
-user_viz.show(10, truncate=False)
-user_viz.printSchema()
+Broadcast join — справочник городов маленький, поэтому broadcast даёт прирост производительности.
 
-Проверка витрины зон (geo_zones_viz):
+Локальное время — рассчитывается через from_utc_timestamp по таймзоне города.
 
-# Витрина зон
-zones_viz = spark.read.parquet("/user/s18151825/data/analytics/geo_zones_viz")
-print(f"Записей: {zones_viz.count()}")
-zones_viz.show(20, truncate=False)
-zones_viz.printSchema()
-
-Проверка витрины рекомендаций (friends_recommendations):
-
-# Витрина рекомендаций
-friends = spark.read.parquet("/user/s18151825/data/analytics/friends_recommendations")
-print(f"Рекомендаций: {friends.count()}")
-friends.show(10, truncate=False)
-
-
-Проверка через HDFS (терминал)
-
-# Проверка структуры папок
-hdfs dfs -ls /user/s18151825/data/analytics/
-
-# Проверка каждой витрины
-hdfs dfs -ls /user/s18151825/data/analytics/user_geo_viz/
-hdfs dfs -ls /user/s18151825/data/analytics/geo_zones_viz/
-hdfs dfs -ls /user/s18151825/data/analytics/friends_recommendations/
-
-# Количество записей в витринах (через wc -l)
-hdfs dfs -cat /user/s18151825/data/analytics/user_geo_viz/date=*/part-*.parquet | wc -l
-hdfs dfs -cat /user/s18151825/data/analytics/geo_zones_viz/month=*/part-*.parquet | wc -l
-hdfs dfs -cat /user/s18151825/data/analytics/friends_recommendations/date=*/part-*.parquet | wc -l
-
-
-Команды запуска скриптов
-
-
-# Запуск витрины пользователей
-spark-submit --master local[*] /lessons/user_geo_visits.py \
-    /user/master/data/geo/events \
-    /user/s18151825/data/geo/cities_parquet \
-    /user/s18151825/data/analytics/user_geo_viz
-
-# Запуск витрины зон
-spark-submit --master local[*] /lessons/geo_zones_viz.py \
-    /user/master/data/geo/events \
-    /user/s18151825/data/geo/cities_parquet \
-    /user/s18151825/data/analytics/geo_zones_viz
-
-# Запуск витрины рекомендаций
-spark-submit --master local[*] /lessons/friends_recommendations.py \
-    /user/master/data/geo/events \
-    /user/s18151825/data/analytics/friends_recommendations
-
+Airflow — DAG с расписанием под недельные и месячные агрегаты.
